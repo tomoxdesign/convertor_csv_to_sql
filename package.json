@@ -1,22 +1,21 @@
 {
-  "name": "convertor_csv_to_sql",
-  "version": "1.0.0",
-  "description": "Desktop aplikace pro převod CSV na SQL pomocí Electronu",
-  "main": "main.js",
-  "scripts": {
-    "start": "electron .",
-    "build-css": "npx tailwindcss -i ./assets/css/input.css -o ./assets/css/tailwind.css --watch .",
-    "win-package-build": "npx electron-packager . CSV2SQL --platform=win32 --arch=x64 --icon=assets/icons/icon.ico --overwrite"
-
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "devDependencies": {
-    "@electron/packager": "^18.4.4",
-    "@tailwindcss/cli": "^4.1.13",
-    "electron": "^38.1.2",
-    "tailwindcss": "^4.1.13"
-  }
+	"name": "convertor_csv_to_sql",
+	"version": "1.0.0",
+	"description": "Desktop aplikace pro převod CSV na SQL pomocí Electronu",
+	"main": "main.js",
+	"scripts": {
+		"start": "electron .",
+		"build-css": "npx tailwindcss -i ./assets/css/input.css -o ./assets/css/tailwind.css --watch .",
+		"win-package-build": "npx electron-packager . CSV2SQL --platform=win32 --arch=x64 --icon=assets/icons/icon.ico --overwrite"
+	},
+	"keywords": [],
+	"author": "Tomáš Kyncl",
+	"license": "ISC",
+	"type": "commonjs",
+	"devDependencies": {
+		"@electron/packager": "^18.4.4",
+		"@tailwindcss/cli": "^4.1.13",
+		"electron": "^38.1.2",
+		"tailwindcss": "^4.1.13"
+	}
 }
