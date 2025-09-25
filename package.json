@@ -1,13 +1,18 @@
 {
   "name": "convertor_csv_to_sql",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Desktop aplikace pro převod CSV na SQL pomocí Electronu",
+  "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "electron ."
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.13",
+    "electron": "^38.1.2",
+    "tailwindcss": "^4.1.13"
+  }
 }
