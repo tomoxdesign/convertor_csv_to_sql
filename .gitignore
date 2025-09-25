@@ -4,3 +4,5 @@ node_modules/
 .vscode/
 # Ignore log files
 assets/css/tailwind.css
+# Ignore distribution files
+dist/

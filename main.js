@@ -27,3 +27,17 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
+
+const { dialog, ipcMain } = require('electron');
+const fs = require('fs');
+
+ipcMain.handle('open-file-dialog', async () => {
+  return await dialog.showOpenDialog({
+    properties: ['openFile'],
+    filters: [{ name: 'CSV / Excel', extensions: ['csv','xlsx'] }]
+  });
+});
+
+ipcMain.handle('read-file', async (event, filePath) => {
+  return fs.readFileSync(filePath); // Buffer
+});
