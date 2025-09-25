@@ -3,6 +3,6 @@ node_modules/
 # Ignore environment variable files
 .vscode/
 # Ignore log files
-assets/css/tailwind.css
+# assets/css/tailwind.css
 # Ignore distribution files
 dist/
