@@ -1,2 +1,6 @@
+# .gitignore file for a Node.js project
 node_modules/
+# Ignore environment variable files
+.vscode/
+# Ignore log files
 assets/css/tailwind.css
