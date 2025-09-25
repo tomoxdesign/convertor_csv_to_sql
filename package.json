@@ -4,7 +4,8 @@
   "description": "Desktop aplikace pro převod CSV na SQL pomocí Electronu",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build-css": "npx tailwindcss -i ./assets/css/input.css -o ./assets/css/tailwind.css --watch ."
   },
   "keywords": [],
   "author": "",
