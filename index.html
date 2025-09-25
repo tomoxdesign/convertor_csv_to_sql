@@ -3,18 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>CSV → SQL Converter</title>
-  <!-- <script src="https://cdn.tailwindcss.com"></script> -->
-   <link rel="stylesheet" href="./assets/css/tailwind.css">
-
+  <title>CSV/Excel → SQL Converter</title>
+  <link rel="stylesheet" href="./assets/css/tailwind.css">
+  <!-- <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script> -->
+   <script src="./assets/js/xlsx.full.min.js"></script>
 </head>
 <body class="bg-gray-200 min-h-screen text-gray-800">
   <div class="max-w-7xl mx-auto p-6">
     <!-- Header -->
     <header class="bg-white rounded-2xl p-6 shadow mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-semibold">CSV → SQL Converter</h1>
-        <p class="text-sm text-gray-500">Nahrát CSV, mapovat sloupce a vygenerovat SQL INSERT příkazy</p>
+        <h1 class="text-2xl font-semibold">CSV/Excel → SQL Converter</h1>
+        <p class="text-sm text-gray-500">Nahrát soubor, mapovat sloupce a vygenerovat SQL INSERT příkazy</p>
       </div>
       <div class="flex items-center gap-4">
         <div id="progressWrap" class="circle" style="--pct:0deg;">
@@ -24,9 +24,11 @@
           </div>
         </div>
         <label class="cursor-pointer bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-          <span>Nahrát CSV</span>
-          <input id="csvFile" type="file" accept=".csv,text/csv" class="hidden" />
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          <span>Nahrát soubor</span>
+          <input id="csvFile" type="file" accept=".csv,.txt,.xlsx" class="hidden" />
         </label>
       </div>
     </header>
@@ -35,9 +37,8 @@
     <main class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Levý panel -->
       <section class="bg-white rounded-2xl p-6 shadow flex flex-col gap-6">
-        <!-- Nastavení souboru -->
         <div id="fileCard" class="hidden">
-          <div class="mb-2">
+          <div class="mb-2 bg-gray-100 p-2 rounded">
             <div id="fileName" class="font-medium text-sm">Soubor: —</div>
             <div id="fileInfo" class="text-xs text-gray-500">Počet řádků: 0 • Sloupců: 0</div>
           </div>
@@ -48,20 +49,38 @@
             <select id="delimiter" class="text-sm rounded-md border-gray-300 px-2 py-1">
               <option value=",">Čárka (,)</option>
               <option value=";">Středník (;)</option>
-              <option value="\t">Tab</option>
+              <!-- <option value="\t">Tab</option> -->
             </select>
-            <button id="applyHeader" class="ml-auto bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm">Aplikovat</button>
+            <button id="applyHeader" class="ml-auto bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-lg text-sm">Aplikovat</button>
           </div>
         </div>
 
         <!-- Mapování sloupců -->
         <div>
-          <h3 class="text-md font-semibold text-gray-700 mt-4 mb-2">🗂️ Mapování sloupců</h3>
-          <div id="mappings" class="flex-1 overflow-auto max-h-80"></div>
+          <h3 class="text-md font-semibold text-gray-700 mt-4 mb-2">Mapování sloupců</h3>
+          <div id="mappings"></div>
+
+          <!-- Inline formulář pro vlastní sloupec -->
+          <div id="customColumnForm" class="hidden flex gap-2 items-end mb-2">
+            <div>
+              <label class="block text-xs text-gray-500">Název sloupce</label>
+              <input type="text" id="customColName" class="rounded-lg border-gray-300 shadow-sm px-2 py-1" />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-500">Hodnota</label>
+              <input type="text" id="customColValue" class="rounded-lg border-gray-300 shadow-sm px-2 py-1" />
+            </div>
+            <button id="addCustomColBtn" class="bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-600">Přidat</button>
+          </div>
+          <button id="showCustomFormBtn" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm mb-2">+ Přidat vlastní sloupec</button>
         </div>
 
         <div class="flex gap-2 mt-auto">
-          <button id="generateBtn" class="ml-auto bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm">Generovat SQL</button>
+          <label class="text-sm text-gray-600 mt-2">Typ SQL příkazu:</label>
+          <select id="sqlType" class="text-sm rounded-md border-gray-300 px-2 py-1 ml-2">
+            <option value="INSERT">INSERT</option>
+            <option value="INSERT IGNORE">INSERT IGNORE</option>
+          </select>
         </div>
       </section>
 
@@ -71,13 +90,11 @@
           <h3 class="font-semibold">Náhled dat</h3>
           <div class="flex items-center gap-2">
             <label class="text-sm text-gray-600">Řádků:</label>
-            <input id="previewRows" type="number" value="5" class="w-20 text-sm rounded-md border-gray-300 px-2 py-1" />
+            <input id="previewRows" type="number" value="5" class="w-20 text-sm rounded-md border border-gray-500 px-2 py-1" />
           </div>
         </div>
-        <div id="previewTableWrap" class="overflow-auto border rounded-md h-64">
-          <table id="previewTable" class="min-w-full text-xs text-left border-collapse">
-            <!-- plní JS -->
-          </table>
+        <div id="previewTableWrap" class="overflow-auto border-gray-400 border rounded-md h-64">
+          <table id="previewTable" class="min-w-full text-xs text-left border-collapse"></table>
         </div>
 
         <div class="mt-4">
@@ -85,14 +102,16 @@
           <input id="tableName" type="text" placeholder="např. users" class="mt-1 w-full rounded-md border-gray-300 px-3 py-2" />
         </div>
 
-        <div class="mt-3 flex gap-2">
-          <button id="copySql" class="bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg text-sm">Kopírovat SQL</button>
-          <button id="downloadSql" class="bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg text-sm">Stáhnout .sql</button>
-        </div>
-
         <div class="mt-4 flex-1 flex flex-col">
           <label class="block text-sm text-gray-600">SQL výstup</label>
           <textarea id="sqlOutput" rows="10" class="mt-1 w-full flex-1 rounded-md border-gray-300 px-3 py-2 font-mono text-xs" readonly></textarea>
+        </div>
+
+        <div class="flex gap-2 mt-3">
+          <button id="generateSQLBtn" class="text-white px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700">Generovat SQL</button>
+          <button id="copySql" class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-sm flex-1">Kopírovat SQL</button>
+          <button id="downloadSql" class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-sm flex-1">Stáhnout .sql</button>
+          <button onclick="showHelp()" class="bg-gray-300 hover:bg-gray-400 px-3 py-2 rounded-lg text-sm">?</button>
         </div>
       </section>
     </main>
