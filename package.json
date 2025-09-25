@@ -6,13 +6,15 @@
   "scripts": {
     "start": "electron .",
     "build-css": "npx tailwindcss -i ./assets/css/input.css -o ./assets/css/tailwind.css --watch .",
-      "win-package-build": "electron-packager . csv-to-sql --platform=win32 --arch=x64 --icon=assets/icon.ico --overwrite"
+    "win-package-build": "npx electron-packager . CSV2SQL --platform=win32 --arch=x64 --icon=assets/icons/icon.ico --overwrite"
+
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@electron/packager": "^18.4.4",
     "@tailwindcss/cli": "^4.1.13",
     "electron": "^38.1.2",
     "tailwindcss": "^4.1.13"
