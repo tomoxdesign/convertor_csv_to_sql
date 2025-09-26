@@ -270,17 +270,20 @@ copySqlBtn.addEventListener("click", async () => {
 	}
 });
 
+// downloadSqlBtn.addEventListener("click", () => {
+// 	if (!sqlOutput.value) return alert("Žádné SQL k uložení.");
+// 	const blob = new Blob([sqlOutput.value], { type: "text/sql" });
+// 	const url = URL.createObjectURL(blob);
+// 	const a = document.createElement("a");
+// 	a.href = url;
+// 	a.download = (tableNameInput.value || "my_table") + ".sql";
+// 	document.body.appendChild(a);
+// 	a.click();
+// 	document.body.removeChild(a);
+// 	URL.revokeObjectURL(url);
+// });
 downloadSqlBtn.addEventListener("click", () => {
-	if (!sqlOutput.value) return alert("Žádné SQL k uložení.");
-	const blob = new Blob([sqlOutput.value], { type: "text/sql" });
-	const url = URL.createObjectURL(blob);
-	const a = document.createElement("a");
-	a.href = url;
-	a.download = (tableNameInput.value || "my_table") + ".sql";
-	document.body.appendChild(a);
-	a.click();
-	document.body.removeChild(a);
-	URL.revokeObjectURL(url);
+	downloadSQLBatches(10000);
 });
 
 // Preview řádků
@@ -324,3 +327,46 @@ addCustomColBtn.addEventListener("click", (e) => {
 generateSQLBtn.addEventListener("click", () => {
 	generateSQL();
 });
+
+function downloadSQLBatches(batchSize = 10000) {
+	if (!parsedRows.length) return alert("Nahraj CSV/Excel a nastav mapování.");
+
+	const tbl = (tableNameInput.value || "my_table").trim();
+	const sqlType = sqlTypeSelect.value || "INSERT";
+	const usedColumns = mappings.filter((m) => m.include);
+	const columns = usedColumns.map((m) => m.sqlName.replace(/\s+/g, "_"));
+	const headerIdx = Number(headerRowInput.value || 1) - 1;
+	const dataRows = parsedRows.slice(headerIdx + 1);
+
+	let offset = 0;
+	let batchNum = 1;
+
+	while (offset < dataRows.length) {
+		const batchRows = dataRows.slice(offset, offset + batchSize);
+
+		const inserts = batchRows.map((row) => {
+			const values = usedColumns.map((m, i) => {
+				if (m.fixedValue && m.fixedValue !== "") return safeSQL(m.fixedValue, m.type);
+				if (m.isCustom) return safeSQL(m.fixedValue || "", m.type);
+				const val = row[i] ?? "";
+				return safeSQL(val, m.type);
+			});
+			return `${sqlType} INTO ${tbl} (${columns.join(", ")}) VALUES (${values.join(", ")});`;
+		});
+
+		const blob = new Blob([`-- Batch ${batchNum}\n` + inserts.join("\n")], { type: "text/sql" });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = `${tbl}_part${batchNum}.sql`;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+
+		offset += batchSize;
+		batchNum++;
+	}
+
+	alert(`SQL soubory staženy, celkem ${batchNum - 1} souborů.`);
+}
